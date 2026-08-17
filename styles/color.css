@@ -1,0 +1,18 @@
+:root {
+  --primary: #f6c945;
+  --primary-dark: #dcae22;
+
+  --secondary: #1f2328;
+
+  --background: #f2f2f0;
+
+  --surface: #ffffff;
+
+  --gray: #b7bdc5;
+
+  --slate: #5a5f66;
+
+  --border: #e4e4e7;
+
+  --shadow: rgba(0,0,0,.08);
+}

@@ -124,6 +124,11 @@ export default function Footer() {
                 <circle cx="17.1" cy="6.9" r="1" fill="currentColor" stroke="none" />
               </svg>
             </a>
+            <a href="https://www.tiktok.com/@devmarkitstudio" target="_blank" rel="noreferrer" aria-label="TikTok">
+              <svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">
+                <path d="M16.6 2h-3.2v13.6a3.1 3.1 0 1 1-2.2-2.97V9.3a6.3 6.3 0 1 0 5.4 6.24V8.3a7.9 7.9 0 0 0 4.6 1.48V6.6a4.6 4.6 0 0 1-4.6-4.6Z" />
+              </svg>
+            </a>
           </div>
         </div>
       </div>

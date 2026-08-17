@@ -1,9 +1,39 @@
 "use client";
 
 import { useEffect } from "react";
+import Particles, { ParticlesProvider } from "@tsparticles/react";
+import { loadSlim } from "@tsparticles/slim";
+import type { Engine, ISourceOptions } from "@tsparticles/engine";
 import gsap from "gsap";
 
-export default function HeroMotion() {
+const options: ISourceOptions = {
+  fullScreen: { enable: false },
+  background: { color: { value: "transparent" } },
+  fpsLimit: 60,
+  detectRetina: true,
+  particles: {
+    number: { value: 62, density: { enable: true, width: 1100, height: 700 } },
+    color: { value: ["#ffd500", "#f1f1ed", "#777770"] },
+    shape: { type: "circle" },
+    opacity: { value: { min: 0.18, max: 0.72 } },
+    size: { value: { min: 1, max: 3 } },
+    links: { enable: true, distance: 145, color: "#ffd500", opacity: 0.13, width: 1 },
+    move: { enable: true, speed: 0.48, direction: "none", random: true, outModes: { default: "out" } },
+  },
+  interactivity: {
+    detectsOn: "window",
+    events: { onHover: { enable: true, mode: ["grab", "repulse"] }, onClick: { enable: true, mode: "push" }, resize: { enable: true } },
+    modes: {
+      grab: { distance: 170, links: { opacity: 0.42 } },
+      repulse: { distance: 90, duration: 0.45, speed: 0.65 },
+      push: { quantity: 5 },
+    },
+  },
+};
+
+const init = async (engine: Engine) => loadSlim(engine);
+
+function Scene() {
   useEffect(() => {
     if (window.matchMedia("(prefers-reduced-motion: reduce)").matches) return;
     const hero = document.querySelector<HTMLElement>(".growth-hero");
@@ -38,5 +68,9 @@ export default function HeroMotion() {
     return () => { hero.removeEventListener("pointermove", move); hero.removeEventListener("pointerleave", reset); context.revert(); };
   }, []);
 
-  return null;
+  return <Particles id="growth-particles" className="growth-particles" options={options} />;
+}
+
+export default function HeroMotion() {
+  return <ParticlesProvider init={init}><Scene /></ParticlesProvider>;
 }

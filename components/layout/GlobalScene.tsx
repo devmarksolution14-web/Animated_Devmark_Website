@@ -14,6 +14,7 @@ import { useEffect, useMemo, useRef, useState } from "react";
 import { Canvas, useFrame, useThree } from "@react-three/fiber";
 import * as THREE from "three";
 import HeroConstellation from "./HeroConstellation";
+import { sectionRevealFade } from "@/lib/sectionReveal";
 
 function scrollSettle() {
   const doc = document.documentElement;
@@ -59,14 +60,30 @@ function buildField(cfg: FieldConfig) {
   return { base, pairs };
 }
 
-function NodeField({ cfg, phase }: { cfg: FieldConfig; phase: number }) {
+// Fades the whole field (points + connecting lines) in once the About
+// section approaches (see SectionFadeDriver). Hero has its own dedicated
+// tsParticles background (HeroParticles) so this layer stays hidden there —
+// only one particle system renders at a time.
+function NodeField({ cfg, phase, aboutFade }: { cfg: FieldConfig; phase: number; aboutFade: React.RefObject<number> }) {
   const { base, pairs } = useMemo(() => buildField(cfg), [cfg]);
   const positions = useMemo(() => base.slice(), [base]);
   const pointsRef = useRef<THREE.Points>(null);
+  const pointsMatRef = useRef<THREE.PointsMaterial>(null);
   const lineRef = useRef<THREE.LineSegments>(null);
+  const lineMatRef = useRef<THREE.LineBasicMaterial>(null);
   const linePositions = useMemo(() => new Float32Array(pairs.length * 6), [pairs.length]);
 
   useFrame((state) => {
+    if (aboutFade.current <= 0.01) {
+      if (pointsMatRef.current) pointsMatRef.current.opacity = 0;
+      if (lineMatRef.current) lineMatRef.current.opacity = 0;
+      if (pointsRef.current) pointsRef.current.visible = false;
+      if (lineRef.current) lineRef.current.visible = false;
+      return;
+    }
+    if (pointsRef.current) pointsRef.current.visible = true;
+    if (lineRef.current) lineRef.current.visible = true;
+
     const settle = scrollSettle();
     const t = state.clock.elapsedTime * cfg.driftSpeed * settle + phase;
     const drift = cfg.drift * settle;
@@ -90,6 +107,8 @@ function NodeField({ cfg, phase }: { cfg: FieldConfig; phase: number }) {
       }
       (lineRef.current.geometry.attributes.position as THREE.BufferAttribute).needsUpdate = true;
     }
+    if (lineMatRef.current) lineMatRef.current.opacity = cfg.opacity * 0.55 * aboutFade.current;
+    if (pointsMatRef.current) pointsMatRef.current.opacity = cfg.opacity * aboutFade.current;
   });
 
   return (
@@ -98,14 +117,14 @@ function NodeField({ cfg, phase }: { cfg: FieldConfig; phase: number }) {
         <bufferGeometry>
           <bufferAttribute attach="attributes-position" args={[positions, 3]} />
         </bufferGeometry>
-        <pointsMaterial color={YELLOW} size={cfg.size} sizeAttenuation transparent opacity={cfg.opacity} depthWrite={false} />
+        <pointsMaterial ref={pointsMatRef} color={YELLOW} size={cfg.size} sizeAttenuation transparent opacity={0} depthWrite={false} />
       </points>
       {cfg.connect && (
         <lineSegments ref={lineRef}>
           <bufferGeometry>
             <bufferAttribute attach="attributes-position" args={[linePositions, 3]} />
           </bufferGeometry>
-          <lineBasicMaterial color={YELLOW} transparent opacity={cfg.opacity * 0.55} depthWrite={false} />
+          <lineBasicMaterial ref={lineMatRef} color={YELLOW} transparent opacity={0} depthWrite={false} />
         </lineSegments>
       )}
     </>
@@ -119,12 +138,17 @@ interface Trail {
   speed: number;
 }
 
-function EnergyTrails({ anchors }: { anchors: THREE.Vector3[] }) {
+function EnergyTrails({ anchors, aboutFade }: { anchors: THREE.Vector3[]; aboutFade: React.RefObject<number> }) {
   const trailsRef = useRef<Trail[]>([]);
   const lastSpawn = useRef(0);
   const meshRefs = [useRef<THREE.Mesh>(null), useRef<THREE.Mesh>(null)];
 
   useFrame((state) => {
+    if (aboutFade.current <= 0.01) {
+      meshRefs.forEach((ref) => { if (ref.current) ref.current.visible = false; });
+      return;
+    }
+
     const t = state.clock.elapsedTime;
     const settle = scrollSettle();
     const spawnGap = 3.2 + (1 - settle) * 9;
@@ -146,7 +170,7 @@ function EnergyTrails({ anchors }: { anchors: THREE.Vector3[] }) {
       ref.current.visible = true;
       ref.current.position.lerpVectors(trail.from, trail.to, trail.progress);
       const fade = Math.sin(Math.min(Math.max(trail.progress, 0), 1) * Math.PI);
-      (ref.current.material as THREE.MeshBasicMaterial).opacity = fade * 0.9;
+      (ref.current.material as THREE.MeshBasicMaterial).opacity = fade * 0.9 * aboutFade.current;
     });
   });
 
@@ -222,22 +246,37 @@ const FIELD_CONFIGS = {
   ] as FieldConfig[],
 };
 
+// Looks up #about once and updates a shared ref each frame so every
+// connecting-line layer can fade in together without each querying the DOM.
+function SectionFadeDriver({ fadeRef }: { fadeRef: React.RefObject<number> }) {
+  const aboutSection = useRef<HTMLElement | null>(null);
+  useEffect(() => {
+    aboutSection.current = document.getElementById("about");
+  }, []);
+  useFrame(() => {
+    fadeRef.current = sectionRevealFade(aboutSection.current);
+  });
+  return null;
+}
+
 function Scene({ reducedMotion, mobile }: { reducedMotion: boolean; mobile: boolean }) {
   const fields = mobile ? FIELD_CONFIGS.mobile : FIELD_CONFIGS.desktop;
   const anchors = useMemo(
     () => Array.from({ length: 10 }, () => new THREE.Vector3((Math.random() - 0.5) * 22, (Math.random() - 0.5) * 13, -9 + (Math.random() - 0.5) * 4)),
     []
   );
+  const aboutFade = useRef(0);
 
   return (
     <>
       <fog attach="fog" args={["#050403", 10, 40]} />
       <ambientLight intensity={0.15} />
+      <SectionFadeDriver fadeRef={aboutFade} />
       {fields.map((cfg, i) => (
-        <NodeField key={i} cfg={cfg} phase={i * 12.4} />
+        <NodeField key={i} cfg={cfg} phase={i * 12.4} aboutFade={aboutFade} />
       ))}
-      {!reducedMotion && !mobile && <EnergyTrails anchors={anchors} />}
-      {!reducedMotion && <HeroConstellation mobile={mobile} />}
+      {!reducedMotion && !mobile && <EnergyTrails anchors={anchors} aboutFade={aboutFade} />}
+      {!reducedMotion && <HeroConstellation mobile={mobile} aboutFade={aboutFade} />}
       <CameraRig reducedMotion={reducedMotion} />
     </>
   );

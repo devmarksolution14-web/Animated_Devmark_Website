@@ -124,8 +124,8 @@ body { color: #f1f1ed; background: #080808; }
 
 .footer-grid { display: grid; grid-template-columns: minmax(240px, 1.15fr) minmax(120px, .6fr) minmax(150px, .7fr) minmax(260px, 1fr); gap: 44px clamp(24px, 4vw, 64px); padding-bottom: clamp(48px, 6vw, 72px); }
 
-.footer-wordmark { display: inline-flex; width: max-content; color: var(--paper); font-size: clamp(2.3rem, 3.25vw, 3.55rem); font-weight: 350; letter-spacing: -.075em; line-height: .9; }
-.footer-wordmark span { color: var(--blue); }
+.footer-wordmark { display: inline-flex; width: max-content; }
+.footer-logo { display: block; width: clamp(180px, 15vw, 240px); height: auto; object-fit: contain; object-position: left center; }
 .footer-brand__desc { margin: 18px 0 0; max-width: 340px; color: #b9b9b2; font-size: .95rem; line-height: 1.7; }
 .footer-brand__contact { display: grid; gap: 14px; margin: 28px 0 0; padding: 0; list-style: none; }
 .footer-brand__contact li { display: flex; align-items: flex-start; gap: 10px; color: #d9d9d2; font-size: .88rem; line-height: 1.5; }

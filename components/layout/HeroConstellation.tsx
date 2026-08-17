@@ -92,12 +92,8 @@ interface Slot {
   holdTimer: number;
 }
 
-function heroFade() {
-  const frac = Math.min(1, window.scrollY / Math.max(1, window.innerHeight * 0.9));
-  return Math.max(0, 1 - frac / 0.85);
-}
 
-export default function HeroConstellation({ mobile }: { mobile: boolean }) {
+export default function HeroConstellation({ mobile, aboutFade }: { mobile: boolean; aboutFade: React.RefObject<number> }) {
   const { camera } = useThree();
   const candidates = useMemo(() => buildCandidates(), []);
   const chains = useMemo(() => buildChains(candidates), [candidates]);
@@ -142,7 +138,7 @@ export default function HeroConstellation({ mobile }: { mobile: boolean }) {
   useFrame((state, delta) => {
     const dt = Math.min(delta, 0.05);
     const t = state.clock.elapsedTime;
-    const fade = heroFade();
+    const fade = aboutFade.current;
 
     if (groupRef.current) groupRef.current.visible = fade > 0.01;
     if (!groupRef.current || fade <= 0.01) return;

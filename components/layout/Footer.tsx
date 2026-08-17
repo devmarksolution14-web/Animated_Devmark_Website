@@ -1,4 +1,5 @@
 import Link from "next/link";
+import Image from "next/image";
 import { ArrowUpRight, ChevronUp, Globe, Mail, MapPin, Phone } from "lucide-react";
 
 import { SITE } from "@/constants/site";
@@ -34,7 +35,13 @@ export default function Footer() {
         <div className="footer-grid">
           <div className="footer-brand">
             <Link href="/" className="footer-wordmark" aria-label="DevMark Solution home">
-              Dev<span>Mark</span>
+              <Image
+                src="/logo/DevLogo_white01.svg"
+                alt="DevMark Solution"
+                width={524}
+                height={410}
+                className="footer-logo"
+              />
             </Link>
             <p className="footer-brand__desc">
               We bring strategy, design, and technology together to help ambitious businesses make their next move.
@@ -105,23 +112,17 @@ export default function Footer() {
             ))}
           </ul>
           <div className="footer-bottom__socials">
-            <a href="https://www.linkedin.com" target="_blank" rel="noreferrer" aria-label="LinkedIn">
+            <a href="https://www.facebook.com/devmarkitstudio/" target="_blank" rel="noreferrer" aria-label="Facebook">
               <svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">
-                <path d="M6.94 8.5H3.56V20h3.38V8.5ZM5.25 7.02a1.96 1.96 0 1 0 0-3.92 1.96 1.96 0 0 0 0 3.92ZM20.44 20h-3.37v-5.6c0-1.34-.02-3.06-1.87-3.06-1.87 0-2.16 1.46-2.16 2.96V20H9.68V8.5h3.23v1.57h.05c.45-.85 1.55-1.75 3.19-1.75 3.41 0 4.04 2.25 4.04 5.17V20Z" />
+                <path d="M22 12.06C22 6.51 17.52 2 12 2S2 6.51 2 12.06c0 5.02 3.66 9.18 8.44 9.94v-7.03H7.9v-2.91h2.54V9.85c0-2.5 1.49-3.89 3.77-3.89 1.09 0 2.24.2 2.24.2v2.46h-1.26c-1.24 0-1.63.77-1.63 1.56v1.88h2.78l-.44 2.91h-2.34V22c4.78-.76 8.44-4.92 8.44-9.94Z" />
               </svg>
             </a>
-            <a href="https://www.instagram.com" target="_blank" rel="noreferrer" aria-label="Instagram">
+            <a href="https://www.instagram.com/devmarkofficial14/" target="_blank" rel="noreferrer" aria-label="Instagram">
               <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.6" aria-hidden="true">
                 <rect x="3.5" y="3.5" width="17" height="17" rx="5" />
                 <circle cx="12" cy="12" r="4.2" />
                 <circle cx="17.1" cy="6.9" r="1" fill="currentColor" stroke="none" />
               </svg>
-            </a>
-            <a href="https://www.behance.net" target="_blank" rel="noreferrer" aria-label="Behance">
-              <span aria-hidden="true">Bē</span>
-            </a>
-            <a href="https://www.x.com" target="_blank" rel="noreferrer" aria-label="X (Twitter)">
-              <span aria-hidden="true">X</span>
             </a>
           </div>
         </div>

@@ -105,7 +105,7 @@ export default function TeamPreview() {
                 <span>{member.name.split(" ")[0]}</span>
                 <span>{member.name.split(" ").slice(1).join(" ")}</span>
               </h3>
-              <p>Core team · DevMark Solution</p>
+              <p>Core team · DevMark IT Studio</p>
               <span className="team-showcase__signal" aria-hidden="true" />
             </div>
           </div>

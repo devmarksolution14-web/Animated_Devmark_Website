@@ -34,10 +34,10 @@ export default function Footer() {
       <div className="container footer-shell">
         <div className="footer-grid">
           <div className="footer-brand">
-            <Link href="/" className="footer-wordmark" aria-label="DevMark Solution home">
+            <Link href="/" className="footer-wordmark" aria-label="DevMark IT Studio home">
               <Image
                 src="/logo/DevLogo_white01.svg"
-                alt="DevMark Solution"
+                alt="DevMark IT Studio"
                 width={524}
                 height={410}
                 className="footer-logo"
@@ -103,7 +103,7 @@ export default function Footer() {
           <a href="#home" className="footer-totop" aria-label="Back to top">
             <ChevronUp aria-hidden="true" />
           </a>
-          <p className="footer-bottom__copyright">© {new Date().getFullYear()} DevMark Solution. All rights reserved.</p>
+          <p className="footer-bottom__copyright">© {new Date().getFullYear()} DevMark IT Studio. All rights reserved.</p>
           <ul className="footer-bottom__legal">
             {legalLinks.map((label) => (
               <li key={label}>

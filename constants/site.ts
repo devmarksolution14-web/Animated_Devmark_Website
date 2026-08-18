@@ -1,5 +1,5 @@
 export const SITE = {
-  name: "DevMark Solution",
+  name: "DevMark IT Studio",
   tagline: "Innovate. Elevate. Dominate.",
 
   description:

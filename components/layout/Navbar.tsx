@@ -20,11 +20,11 @@ export default function Navbar() {
           <Link
             href="/"
             className="brand"
-            aria-label="DevMark Solution Home"
+            aria-label="DevMark IT Studio Home"
           >
             <Image
               src="/logo/DevLogo_white01.svg"
-              alt="DevMark Solution"
+              alt="DevMark IT Studio"
               width={524}
               height={410}
               priority

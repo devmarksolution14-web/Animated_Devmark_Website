@@ -220,13 +220,21 @@ function CameraRig({ reducedMotion }: { reducedMotion: boolean }) {
     smoothed.current.x += (targetX - smoothed.current.x) * 0.035;
     smoothed.current.y += (targetY - smoothed.current.y) * 0.035;
 
-    const dolly = 12 - smoothed.current.scroll * 13.5;
+    // Ease the scroll->dolly mapping so its rate of change approaches zero
+    // near the end of the page. The camera ends up very close to the
+    // constellation there, so with a linear mapping any tiny per-frame
+    // scroll noise (Lenis micro-corrections, sub-pixel scrollY reads) was
+    // amplified by that proximity into visible z-axis vibration. A cubic
+    // ease-out reaches the same final dolly position but flattens out
+    // right as it gets there, so residual noise stops moving the camera.
+    const scrollEase = 1 - (1 - smoothed.current.scroll) ** 3;
+    const dolly = 12 - scrollEase * 13.5;
     const bob = Math.sin(state.clock.elapsedTime * 0.12) * 0.25 * settle;
 
     camera.position.x = smoothed.current.x;
     camera.position.y = smoothed.current.y + bob;
     camera.position.z = dolly;
-    camera.lookAt(smoothed.current.x * 0.3, smoothed.current.scroll * -2.2, dolly - 9);
+    camera.lookAt(smoothed.current.x * 0.3, scrollEase * -2.2, dolly - 9);
   });
 
   return null;

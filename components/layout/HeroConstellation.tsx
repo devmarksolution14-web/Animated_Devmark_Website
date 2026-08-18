@@ -5,7 +5,7 @@
    and useFrame mutating typed arrays / Object3D properties every frame is the documented,
    performant R3F pattern, not a React re-render concern. */
 
-import { useMemo, useRef } from "react";
+import { useEffect, useMemo, useRef } from "react";
 import { useFrame, useThree } from "@react-three/fiber";
 import * as THREE from "three";
 
@@ -104,6 +104,21 @@ export default function HeroConstellation({ mobile, aboutFade }: { mobile: boole
   const nextSpawn = useRef(0);
   const nextChain = useRef(6);
   const chainQueue = useRef<{ slotIndex: number; a: number; b: number; delay: number }[]>([]);
+
+  // slotCount can change if `mobile` flips after mount (e.g. a resize crossing
+  // the breakpoint). slotLines below is a useMemo that resizes with it, so
+  // slots.current — a plain ref, fixed at first render — must be resynced
+  // here or the two arrays drift out of length and index into each other's
+  // stale slots (line.geometry on an undefined line).
+  useEffect(() => {
+    if (slots.current.length !== slotCount) {
+      slots.current = Array.from(
+        { length: slotCount },
+        (_, i) => slots.current[i] ?? { active: false, a: 0, b: 0, progress: 0, phase: "in" as Phase, holdTimer: 0 }
+      );
+      chainQueue.current = chainQueue.current.filter((q) => q.slotIndex < slotCount);
+    }
+  }, [slotCount]);
 
   const livePositions = useMemo(() => new Float32Array(NODE_COUNT * 3), []);
   const primaryBuf = useMemo(() => new Float32Array(PRIMARY_COUNT * 3), []);

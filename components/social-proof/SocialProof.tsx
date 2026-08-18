@@ -19,26 +19,22 @@ const tools = [
   { name: "HubSpot", slug: "hubspot", type: "Growth" },
 ];
 
+// Draft quotes for our actual portfolio clients — pending real client sign-off before launch.
 const testimonials = [
   {
-    quote: "DevMark gave our brand the clarity and confidence it needed. The new site looks sharp and makes the value of our work instantly clear.",
-    name: "Aarav Shrestha",
-    role: "Founder, Aster Labs",
+    quote: "DevMark gave Annapurna Dental a website that finally matches the quality of care we provide. Patients tell us booking feels effortless now.",
+    name: "Annapurna Dental",
+    role: "Dental Clinic",
   },
   {
-    quote: "They work like an extension of our own team: fast, thoughtful, and obsessed with the small details that make a real difference.",
-    name: "Maya Karki",
-    role: "Marketing Lead, Nivara",
+    quote: "The DevMark team turned a complex study-abroad journey into a platform students actually enjoy using. Our sign-ups picked up right after launch.",
+    name: "connectuni.ai",
+    role: "AI Study Abroad Platform",
   },
   {
-    quote: "From strategy to launch, every decision felt intentional. We saw stronger engagement within the first weeks of going live.",
-    name: "Rohan Gurung",
-    role: "Director, Northline",
-  },
-  {
-    quote: "The final product is equal parts beautiful and practical. It has made our team faster and our customer journey much simpler.",
-    name: "Sanjana Rai",
-    role: "Co-founder, Katha Co.",
+    quote: "DevMark understood exactly what HR teams need from a recruitment site. Clean, fast, and it makes us look as sharp as the candidates we place.",
+    name: "Nexus HR",
+    role: "Human Resources Website",
   },
 ];
 

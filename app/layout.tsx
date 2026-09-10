@@ -9,12 +9,8 @@ import SmoothCursor from "@/components/ui/SmoothCursor";
 import { SITE } from "@/constants/site";
 
 export const metadata: Metadata = {
-<<<<<<< HEAD
-  title: SITE.name,
-=======
   metadataBase: new URL(SITE.url),
   title: "DevMark IT Studio | Digital Growth Studio",
->>>>>>> 80ad3c6 (Preloader Added)
   description: SITE.description,
 };
 

@@ -16,10 +16,20 @@ import * as THREE from "three";
 import HeroConstellation from "./HeroConstellation";
 import { sectionRevealFade } from "@/lib/sectionReveal";
 
+// Cached once on mount/resize instead of read every animation frame — re-reading
+// scrollHeight/innerHeight per frame while scrolling is both wasted work and a
+// source of noise if a transient layout read lands mid-reflow, which is what was
+// producing the camera/constellation jiggle at the end of the page.
+let cachedMaxScroll = 1;
+function refreshMaxScroll() {
+  cachedMaxScroll = Math.max(1, document.documentElement.scrollHeight - window.innerHeight);
+}
+function getScrollFraction() {
+  return Math.min(1, window.scrollY / cachedMaxScroll);
+}
+
 function scrollSettle() {
-  const doc = document.documentElement;
-  const maxScroll = Math.max(1, doc.scrollHeight - window.innerHeight);
-  const frac = Math.min(1, window.scrollY / maxScroll);
+  const frac = getScrollFraction();
   return 1 - Math.max(0, (frac - 0.85) / 0.15) * 0.7;
 }
 
@@ -189,7 +199,7 @@ function EnergyTrails({ anchors, aboutFade }: { anchors: THREE.Vector3[]; aboutF
 function CameraRig({ reducedMotion }: { reducedMotion: boolean }) {
   const { camera } = useThree();
   const pointer = useRef({ x: 0, y: 0 });
-  const smoothed = useRef({ x: 0, y: 0, z: 12, scroll: 0 });
+  const smoothed = useRef({ x: 0, y: 0, z: 12, scroll: 0, bottomLock: false });
 
   useEffect(() => {
     if (reducedMotion) return;
@@ -207,10 +217,20 @@ function CameraRig({ reducedMotion }: { reducedMotion: boolean }) {
       camera.lookAt(0, 0, 0);
       return;
     }
-    const doc = document.documentElement;
-    const maxScroll = Math.max(1, doc.scrollHeight - window.innerHeight);
-    const scrollFrac = Math.min(1, window.scrollY / maxScroll);
-    smoothed.current.scroll += (scrollFrac - smoothed.current.scroll) * 0.06;
+    const scrollFrac = getScrollFraction();
+    // Once genuinely at the bottom, snap straight to the resting value instead
+    // of continuing to chase it with the lerp below — that's what reads as a
+    // jiggle: scrollY can wobble by a sub-pixel amount right at the bottom
+    // (overscroll, or the browser's scroll-anchoring nudging position after a
+    // background reflow while the tab was idle/hidden). A hard on/off threshold
+    // at exactly the same value flip-flops if that wobble straddles it, which
+    // looks identical to the jiggle it's meant to fix — so this uses hysteresis:
+    // once locked, it takes scrolling meaningfully back up to release the lock,
+    // immune to tiny noise right at the boundary.
+    if (!smoothed.current.bottomLock && scrollFrac > 0.997) smoothed.current.bottomLock = true;
+    else if (smoothed.current.bottomLock && scrollFrac < 0.985) smoothed.current.bottomLock = false;
+    if (smoothed.current.bottomLock) smoothed.current.scroll = 1;
+    else smoothed.current.scroll += (scrollFrac - smoothed.current.scroll) * 0.06;
 
     // near the very end of the journey, let the world settle: dampen parallax and bob
     const settle = 1 - Math.max(0, (smoothed.current.scroll - 0.85) / 0.15) * 0.85;
@@ -300,8 +320,29 @@ export default function GlobalScene() {
     const checkMobile = () => setMobile(window.innerWidth < 760);
     checkMobile();
     window.addEventListener("resize", checkMobile);
+
+    // Keep the cached scroll-height reading in sync with the real document —
+    // not just on viewport resize, but also when content height changes later
+    // (late-loading images/fonts), which is what the camera-rig math reads.
+    refreshMaxScroll();
+    const resizeObserver = new ResizeObserver(() => refreshMaxScroll());
+    resizeObserver.observe(document.documentElement);
+
+    // A tab left idle/hidden for a while can come back to a page whose height
+    // shifted slightly (fonts/images finishing, a background reflow) without
+    // ever firing a resize — refresh the cached reading the moment it's visible
+    // again, before the user's next scroll can read a stale value.
+    const handleVisibility = () => {
+      if (document.visibilityState === "visible") refreshMaxScroll();
+    };
+    document.addEventListener("visibilitychange", handleVisibility);
+
     setReady(true);
-    return () => window.removeEventListener("resize", checkMobile);
+    return () => {
+      window.removeEventListener("resize", checkMobile);
+      resizeObserver.disconnect();
+      document.removeEventListener("visibilitychange", handleVisibility);
+    };
   }, []);
 
   if (!ready) return null;

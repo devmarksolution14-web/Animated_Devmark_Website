@@ -168,7 +168,6 @@ body { color: #f1f1ed; background: #080808; }
   .site-footer { border-radius: 20px 20px 0 0; }
   .footer-grid { grid-template-columns: 1fr; gap: 40px; }
   .footer-bottom { flex-direction: column; align-items: flex-start; padding-top: 40px; }
-  .footer-totop { top: -20px; }
 }
 @media(prefers-reduced-motion:reduce) { .footer-col-links a, .footer-brand__contact a, .footer-newsletter__cta, .footer-bottom__socials a, .footer-totop { transition: none; } }
 
@@ -918,3 +917,36 @@ body { color: #f1f1ed; background: #080808; }
 .preloader__particles.is-fading .preloader__particle { opacity:0; transform:translate(-50%,-50%) rotate(var(--angle)) translateX(clamp(115px, 19vw, 220px)) scale(.4); }
 @media(max-width:480px) { .preloader__progress { width:min(230px, 66vw); } }
 @media(prefers-reduced-motion:reduce) { .preloader { display:none; } }
+
+/* ── Responsive fixes ──────────────────────────────────────────────── */
+
+/* Hero reactor on tablet/phone: it sits behind the headline as decoration, so
+   drop the solid yellow centre disc (it swallowed the yellow outlined "MOVE.")
+   and its label (cut off at the screen edge as "GROWT"), keeping the rings. */
+@media(max-width:950px) {
+  .growth-center { background:transparent; box-shadow:0 0 0 1px rgba(255,213,0,.45),0 0 40px rgba(255,213,0,.12); }
+  .growth-center > * { visibility:hidden; }
+}
+@media(max-width:650px) {
+  .growth-reactor { opacity:.3; }
+  .orbit-node { display:none; }
+}
+
+/* Hero process strip on phones: keep the three-column row, but stack each
+   item (number, title, caption) so the text can be a readable size. */
+@media(max-width:650px) {
+  .growth-metric,
+  .growth-metric+.growth-metric { display:block; padding:14px 8px; }
+  .growth-metric:first-child { padding-left:0; }
+  .growth-metric:last-child { padding-right:0; }
+  .growth-metric>span { display:block; margin-bottom:6px; font-size:9px; }
+  .growth-metric strong { display:block; font-size:11px; letter-spacing:.3px; }
+  .growth-metric small { display:block; margin-top:5px; color:#8f8f88; font-size:10px; line-height:1.35; }
+}
+@media(max-width:360px) {
+  .growth-metric strong { font-size:10px; letter-spacing:0; }
+  .growth-metric small { font-size:9.5px; }
+}
+
+/* Team selector: let long names wrap instead of being cut to "Abhishek Ra…". */
+.team-showcase__person strong { white-space:normal; overflow:visible; text-overflow:clip; line-height:1.2; overflow-wrap:break-word; }

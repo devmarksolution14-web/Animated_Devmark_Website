@@ -78,7 +78,7 @@ export default function GlobalScene() {
       <Canvas
         dpr={mobile ? [1, 1.5] : [1, 2]}
         camera={{ position: [0, 0, 0], fov: 60, near: 0.1, far: CAMERA_FAR }}
-        gl={{ antialias: !mobile, alpha: true, powerPreference: "high-performance", toneMapping: THREE.NoToneMapping }}
+        gl={{ antialias: true, alpha: true, powerPreference: "high-performance", toneMapping: THREE.NoToneMapping }}
         frameloop={running ? "always" : "demand"}
       >
         <ConstellationSky mobile={mobile} seed={seed} reducedMotion={reducedMotion} metrics={metrics} />

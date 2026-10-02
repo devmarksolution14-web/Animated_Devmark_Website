@@ -18,7 +18,7 @@ const SMOOTHING = 3.2;
 /** How far ahead the camera can see. Stars fade in at this distance and are dimmest near it. */
 const FIELD_DEPTH = 60;
 /** Number of small ambient clusters spread along the scroll path. */
-const AMBIENT_COUNT = { desktop: 20, mobile: 8 };
+const AMBIENT_COUNT = { desktop: 20, mobile: 12 };
 /** Number of large hand-shaped constellations, one per major section (see HERO_SECTIONS). */
 const HERO_COUNT = 5;
 /** Longest line a constellation may draw (world units, before growth). Longer pattern edges are
@@ -51,11 +51,20 @@ export function pickSeed() {
 
 // Secondary knobs
 /** Loose background stars (no lines) that fill the space between clusters. */
-const DUST_COUNT = { desktop: 420, mobile: 150 };
+const DUST_COUNT = { desktop: 420, mobile: 220 };
 /** A section's constellation sits this far ahead of the camera when that section is centred. */
 const HERO_LEAD = 14;
 /** Max camera offset (world units) from mouse parallax. Keep it subtle. */
 const MOUSE_PARALLAX = 0.35;
+/** Camera field of view (degrees): landscape screens use the first, the tallest portrait phones
+ *  the second, so a phone sees about as much sky as a desktop instead of a zoomed-in slice. */
+const FOV_RANGE: [number, number] = [60, 78];
+/** Screen size (CSS px, sqrt of width x height) at which stars are drawn at their designed size.
+ *  1138 ≈ a 1440x900 desktop. Smaller screens draw stars proportionally smaller, so a star takes
+ *  the same share of a phone screen as of a desktop one. */
+const STAR_SCALE_REFERENCE = 1138;
+/** Clamp for that star scale: [smallest phones, very large monitors]. */
+const STAR_SCALE_RANGE: [number, number] = [0.55, 1.15];
 /** Per-frame delta cap (s) so a tab returning from the background can't cause a jump. */
 const MAX_DT = 1 / 20;
 
@@ -724,6 +733,7 @@ const starVertex = /* glsl */ `
   attribute float aFloat;
   attribute vec3 aCenter;
   uniform float uPixelRatio;
+  uniform float uSizeScale; // star size relative to a 1440x900 desktop
   uniform float uTwinkle;
   uniform float uAspect;
   uniform vec2 uMouse;
@@ -751,7 +761,7 @@ const starVertex = /* glsl */ `
     // near = bigger. The sprite is 4x the core so the glow halo fits; tiny
     // stars get a minimum sprite but keep their own, smaller core (vCore is the
     // core's share of the sprite), so different sizes stay visibly different.
-    float core = aSize * mix(1.0, 1.35, g) * 10.0 / max(depth, 0.5);
+    float core = aSize * uSizeScale * mix(1.0, 1.35, g) * 10.0 / max(depth, 0.5);
   #ifdef IS_DEST
     float sprite = clamp(core * 4.0 * ${DEST_BLUR.toFixed(2)}, 6.0, 135.0); // blown up = soft, out-of-focus
   #else
@@ -928,6 +938,7 @@ export default function ConstellationSky({
       uDestOpacity: { value: DEST_OPACITY },
       uDestNear: { value: DEST_NEAR },
       uLineOpacity: { value: LINE_OPACITY },
+      uSizeScale: { value: 1 },
       uAspect: { value: 1 },
       uMouse: { value: new THREE.Vector2(9, 9) },
     };
@@ -1084,7 +1095,21 @@ export default function ConstellationSky({
 
     u.uOpacity.value = fade;
     u.uPixelRatio.value = state.gl.getPixelRatio();
-    u.uAspect.value = state.size.width / Math.max(1, state.size.height);
+    const w = state.size.width;
+    const h = Math.max(1, state.size.height);
+    const aspect = w / h;
+    u.uAspect.value = aspect;
+    // Portrait screens see a narrow slice of sky at the desktop field of view, so
+    // widen it (60° → 78° from square down to tall phones), and draw stars in
+    // proportion to the screen. Desktop at 1440x900 is unchanged.
+    const tall = Math.min(1, Math.max(0, (1 - aspect) / 0.55));
+    const fov = FOV_RANGE[0] + (FOV_RANGE[1] - FOV_RANGE[0]) * tall;
+    const cam = state.camera as THREE.PerspectiveCamera;
+    if (Math.abs(cam.fov - fov) > 0.01) {
+      cam.fov = fov;
+      cam.updateProjectionMatrix();
+    }
+    u.uSizeScale.value = Math.min(STAR_SCALE_RANGE[1], Math.max(STAR_SCALE_RANGE[0], Math.sqrt(w * h) / STAR_SCALE_REFERENCE));
     u.uTwinkle.value = s.twinkle;
     u.uFloat.value = s.float;
     u.uPulse.value = s.pulse;

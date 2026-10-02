@@ -1,4 +1,5 @@
 import type { Metadata } from "next";
+import Script from "next/script";
 import "./globals.css";
 import Navbar from "@/components/layout/Navbar";
 import Footer from "@/components/layout/Footer";
@@ -22,6 +23,12 @@ export default function RootLayout({
   return (
     <html lang="en">
       <body>
+        {/* A refresh always starts at the top (Home): stop the browser restoring the
+            old scroll position, and drop a leftover #section from an earlier nav click.
+            Only on reload, so a shared link like /#contact still opens at Contact. */}
+        <Script id="scroll-to-top-on-reload" strategy="beforeInteractive">
+          {`(function(){try{if("scrollRestoration" in history)history.scrollRestoration="manual";var n=performance.getEntriesByType("navigation")[0];if(n&&n.type==="reload"){if(location.hash)history.replaceState(history.state,"",location.pathname+location.search);window.scrollTo(0,0);}}catch(e){}})();`}
+        </Script>
         <Preloader />
         <GlobalScene />
         <SmoothScroll />

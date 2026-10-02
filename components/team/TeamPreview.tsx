@@ -6,7 +6,7 @@ import gsap from "gsap";
 import { ScrollTrigger } from "gsap/ScrollTrigger";
 
 const team = [
-  { name: "Shishir Gautam", role: "CEO", image: "/team/UpgradedImg_Shishir04.png", focus: "team-showcase__image--shishir" },
+  { name: "Shishir Gautam", role: "CEO", image: "/team/shishir_image03.png", focus: "team-showcase__image--shishir" },
   { name: "Abhishek Rayamajhi", role: "Founder", image: "/team/upgradedImg_Abhishek02.png", focus: "team-showcase__image--abhishek" },
   { name: "Ashutosh Sharma", role: "Founding Member", image: "/team/upgradedImg_Ashutosh04.png", focus: "team-showcase__image--ashutosh" },
 ];

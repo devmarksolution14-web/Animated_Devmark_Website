@@ -24,7 +24,6 @@ export default function Portfolio() {
     if (!section || window.matchMedia("(prefers-reduced-motion: reduce)").matches) return;
     gsap.registerPlugin(ScrollTrigger);
     const media = gsap.matchMedia();
-    const cleanup: Array<() => void> = [];
     const context = gsap.context(() => {
       gsap.from(".portfolio-showcase .portfolio-heading > *", { y: 35, opacity: 0, duration: .9, stagger: .12, ease: "power4.out", scrollTrigger: { trigger: section, start: "top 72%", once: true } });
       const projectCards = gsap.utils.toArray<HTMLElement>(".portfolio-showcase .project");
@@ -33,55 +32,40 @@ export default function Portfolio() {
         gsap.from(projectCards, { y: 40, opacity: 0, duration: .85, stagger: .12, ease: "power3.out", scrollTrigger: { trigger: ".portfolio-grid", start: "top 85%", once: true } });
       });
 
+      // Phones: each card simply rises in from below as it scrolls into view (plays once).
       media.add("(max-width: 800px)", () => {
-        const anchorCard = projectCards[0];
-
-        projectCards.forEach((card, index) => {
-          gsap.set(card, {
-            zIndex: projectCards.length - index,
-            transformOrigin: "50% 62%",
-            willChange: "transform",
-            force3D: true,
-          });
-        });
-
-        gsap.from(projectCards, {
-          x: (index, card: HTMLElement) => anchorCard.offsetLeft - card.offsetLeft + index * 7,
-          y: (index, card: HTMLElement) => anchorCard.offsetTop - card.offsetTop + index * 9,
-          rotation: (index) => [-1.5, 1.8, -2.2, 2.4][index] ?? 0,
-          scale: (index) => 1 - index * 0.018,
-          duration: 1,
-          stagger: 0.13,
-          ease: "none",
-          scrollTrigger: {
-            trigger: ".portfolio-showcase .portfolio-grid",
-            start: "top 78%",
-            end: () => `+=${Math.max(520, window.innerHeight * 0.9)}`,
-            scrub: 0.42,
-            invalidateOnRefresh: true,
-          },
+        gsap.set(projectCards, { y: 40, autoAlpha: 0, force3D: true });
+        ScrollTrigger.batch(projectCards, {
+          start: "top 92%",
+          once: true,
+          onEnter: (batch) => gsap.to(batch, { y: 0, autoAlpha: 1, duration: 0.7, stagger: 0.12, ease: "power3.out", overwrite: true, clearProps: "transform,willChange" }),
         });
       });
 
-      section.querySelectorAll<HTMLElement>(".project:not(.project--cta)").forEach((card) => {
-        const image = card.querySelector<HTMLElement>(".project__image");
-        const rotateX = gsap.quickTo(card, "rotationX", { duration: .5, ease: "power3.out" });
-        const rotateY = gsap.quickTo(card, "rotationY", { duration: .5, ease: "power3.out" });
-        const imageX = image ? gsap.quickTo(image, "x", { duration: .65, ease: "power3.out" }) : null;
-        const imageY = image ? gsap.quickTo(image, "y", { duration: .65, ease: "power3.out" }) : null;
-        const move = (event: PointerEvent) => {
-          const box = card.getBoundingClientRect();
-          const x = (event.clientX - box.left) / box.width - .5;
-          const y = (event.clientY - box.top) / box.height - .5;
-          rotateY(x * 5); rotateX(y * -5); imageX?.(x * -10); imageY?.(y * -8);
-        };
-        const leave = () => { rotateX(0); rotateY(0); imageX?.(0); imageY?.(0); };
-        card.addEventListener("pointermove", move);
-        card.addEventListener("pointerleave", leave);
-        cleanup.push(() => { card.removeEventListener("pointermove", move); card.removeEventListener("pointerleave", leave); });
+      // Tilt is mouse-only: on touch, pointermove fires while scrolling and would fight the scroll reveal.
+      media.add("(hover: hover) and (pointer: fine)", () => {
+        const cleanup: Array<() => void> = [];
+        section.querySelectorAll<HTMLElement>(".project:not(.project--cta)").forEach((card) => {
+          const image = card.querySelector<HTMLElement>(".project__image");
+          const rotateX = gsap.quickTo(card, "rotationX", { duration: .5, ease: "power3.out" });
+          const rotateY = gsap.quickTo(card, "rotationY", { duration: .5, ease: "power3.out" });
+          const imageX = image ? gsap.quickTo(image, "x", { duration: .65, ease: "power3.out" }) : null;
+          const imageY = image ? gsap.quickTo(image, "y", { duration: .65, ease: "power3.out" }) : null;
+          const move = (event: PointerEvent) => {
+            const box = card.getBoundingClientRect();
+            const x = (event.clientX - box.left) / box.width - .5;
+            const y = (event.clientY - box.top) / box.height - .5;
+            rotateY(x * 5); rotateX(y * -5); imageX?.(x * -10); imageY?.(y * -8);
+          };
+          const leave = () => { rotateX(0); rotateY(0); imageX?.(0); imageY?.(0); };
+          card.addEventListener("pointermove", move);
+          card.addEventListener("pointerleave", leave);
+          cleanup.push(() => { card.removeEventListener("pointermove", move); card.removeEventListener("pointerleave", leave); });
+        });
+        return () => cleanup.forEach((remove) => remove());
       });
     }, section);
-    return () => { cleanup.forEach((remove) => remove()); media.revert(); context.revert(); };
+    return () => { media.revert(); context.revert(); };
   }, []);
 
   return (

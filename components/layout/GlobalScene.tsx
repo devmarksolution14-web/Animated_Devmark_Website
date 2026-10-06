@@ -76,7 +76,7 @@ export default function GlobalScene() {
   return (
     <div className="global-scene" aria-hidden="true">
       <Canvas
-        dpr={mobile ? [1, 1.5] : [1, 2]}
+        dpr={mobile ? [1, 1.25] : [1, 2]}
         camera={{ position: [0, 0, 0], fov: 60, near: 0.1, far: CAMERA_FAR }}
         gl={{ antialias: true, alpha: true, powerPreference: "high-performance", toneMapping: THREE.NoToneMapping }}
         frameloop={running ? "always" : "demand"}

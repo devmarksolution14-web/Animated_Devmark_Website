@@ -76,34 +76,14 @@ export default function Services() {
         gsap.from(cards, { y: 36, opacity: 0, duration: .8, stagger: .08, ease: "power3.out", scrollTrigger: { trigger: ".service-grid", start: "top 85%", once: true } });
       });
 
+      // Phones: each card simply rises in from below as it scrolls into view (plays once).
       media.add("(max-width: 800px)", () => {
-      const anchorCard = cards[0];
-      gsap.set(cards, { force3D: true, willChange: "transform", transformOrigin: "50% 62%" });
-      cards.forEach((card, index) => gsap.set(card, {
-        zIndex: cards.length - index,
-        x: anchorCard.offsetLeft - card.offsetLeft + index * 6,
-        y: anchorCard.offsetTop - card.offsetTop + index * 8,
-        rotation: [-1.5, 1.6, -1.9, 2.1, -2.2, 1.8, -1.6, 2.3][index] ?? 0,
-        scale: 1 - index * 0.012,
-        autoAlpha: index === 0 ? 1 : 0,
-      }));
-
-      const deckTimeline = gsap.timeline({
-        scrollTrigger: {
-          trigger: ".service-grid",
-          start: "top 88%",
-          end: () => `+=${Math.max(620, window.innerHeight * 1.05)}`,
-          scrub: 0.42,
-          invalidateOnRefresh: true,
-        },
-      });
-
-      deckTimeline.to(cards[0], { x: 0, y: 0, rotation: 0, scale: 1, duration: 0.55, ease: "none" }, 0);
-      cards.slice(1).forEach((card, index) => {
-        const dealAt = index * 0.14;
-        deckTimeline.to(card, { x: 0, y: 0, rotation: 0, scale: 1, duration: 1, ease: "none" }, dealAt);
-        deckTimeline.to(card, { autoAlpha: 1, duration: 0.12, ease: "none" }, dealAt + 0.82);
-      });
+        gsap.set(cards, { y: 40, autoAlpha: 0, force3D: true });
+        ScrollTrigger.batch(cards, {
+          start: "top 92%",
+          once: true,
+          onEnter: (batch) => gsap.to(batch, { y: 0, autoAlpha: 1, duration: 0.7, stagger: 0.12, ease: "power3.out", overwrite: true, clearProps: "transform,willChange" }),
+        });
       });
 
       cards.forEach((card) => {
